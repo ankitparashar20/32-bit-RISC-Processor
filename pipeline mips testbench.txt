@@ -1,0 +1,45 @@
+module TEST_PIPELINE();
+reg CLK1, CLK2;
+wire [31:0]  PC, IF_ID_IR, IF_ID_NPC, ID_EX_IR, 
+ID_EX_NPC, ID_EX_A, ID_EX_B, ID_EX_Imm, EX_MEM_IR, EX_MEM_ALUOut, EX_MEM_B,MEM_WB_IR, MEM_WB_ALUOut, MEM_WB_LMD;
+
+wire [2:0] ID_EX_type,EX_MEM_type,MEM_WB_type;
+
+integer k;
+
+PIPELINE_PRO mips(CLK1, CLK2, PC, IF_ID_IR, IF_ID_NPC, ID_EX_IR, 
+ID_EX_NPC, ID_EX_A, ID_EX_B, ID_EX_Imm, EX_MEM_IR, EX_MEM_ALUOut, EX_MEM_B,MEM_WB_IR, MEM_WB_ALUOut, MEM_WB_LMD,ID_EX_type, EX_MEM_type, MEM_WB_type);
+initial
+begin
+    CLK1= 0; CLK2=0;
+    repeat(20)
+    begin 
+    #5 CLK1=1; #5 CLK1=0;
+    #5 CLK2=1; #5 CLK2=0;  
+    end  
+end
+
+initial 
+begin
+for(k=0; k<31; k=k+1)
+mips.Reg[k] = k;
+
+mips.Mem[0] = 32'h2801_000A; // ADDI R1, R0, 10;
+mips.Mem[1] = 32'h2802_0014; // ADDI R2, R0, 20;
+mips.Mem[2] = 32'h2803_0019;
+mips.Mem[3] = 32'h0CE7_7800;
+mips.Mem[4] = 32'h0CE7_7800;
+mips.Mem[5] = 32'h0022_2000;
+mips.Mem[6] = 32'h0CE7_7800;
+mips.Mem[7] = 32'h0083_2800;
+mips.Mem[8] = 32'hFC00_0000; //HLT
+mips.HALTED = 0;
+mips.PC = 0;
+mips.TAKEN_BRANCH = 0;
+
+#280
+for(k=0; k<6; k=k+1)
+ $display("R%1d - %2d ", k, mips.Reg[k]);
+
+end
+endmodule
